@@ -11,7 +11,8 @@ public class UDPFrame extends JFrame {
 
     private final double sizeScale = 0.5;
     private JTextField addressField;
-    private JTextField portField;
+    private JTextField senderPortField;
+    private JTextField receiverPortField;
     private final Font font = new Font("Arial Rounded MT Bold", Font.PLAIN, 16);
     private Sender sender;
     private Receiver receiver;
@@ -21,30 +22,39 @@ public class UDPFrame extends JFrame {
     private Timer tableUpdateTimer;
     private Dimension windowSize;
 
-    public UDPFrame(String address, String port) throws Exception {
+    public UDPFrame(String address, String senderPort, String receiverPort) throws Exception {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension screenSize = toolkit.getScreenSize();
         windowSize = new Dimension((int) (screenSize.getWidth() / 2), (int) (screenSize.getHeight() / 2));
         setSize((int) (sizeScale * screenSize.getWidth()), (int) (sizeScale * screenSize.getHeight()));
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setTitle("UDP self-recognition");
-        createAddressPanel(address, port);
+        createAddressPortPanel(address, senderPort, receiverPort);
         createButtonPanel();
         setLocationRelativeTo(null);
     }
 
-    private void createAddressPanel(String address, String port) {
+    private void createAddressPortPanel(String address, String senderPort, String receiverPort) {
+        JPanel addressPortPanel = new JPanel();
+        addressPortPanel.setLayout(new BorderLayout());
         JPanel addressPanel = new JPanel();
+        JPanel portPanel = new JPanel();
         JLabel addressLabel = new JLabel("multicast address:");
-        JLabel portLabel = new JLabel("port:");
+        JLabel senderPortLabel = new JLabel("sender port:");
+        JLabel receiverPortLabel = new JLabel("receiver port:");
         addressLabel.setFont(font);
         addressPanel.add(addressLabel);
         addressPanel.add(addressField = new JTextField(address, 16));
-        addressPanel.add(portLabel);
-        addressPanel.add(portField = new JTextField(port, 5));
+        portPanel.add(senderPortLabel);
+        portPanel.add(senderPortField = new JTextField(senderPort, 5));
+        portPanel.add(receiverPortLabel);
+        portPanel.add(receiverPortField = new JTextField(receiverPort, 5));
         addressField.setFont(font);
-        portField.setFont(font);
-        add(addressPanel, BorderLayout.NORTH);
+        senderPortField.setFont(font);
+        receiverPortField.setFont(font);
+        addressPortPanel.add(addressPanel,BorderLayout.NORTH);
+        addressPortPanel.add(portPanel,BorderLayout.SOUTH);
+        add(addressPortPanel, BorderLayout.NORTH);
     }
 
     private void createButtonPanel() {
@@ -65,14 +75,15 @@ public class UDPFrame extends JFrame {
         });
         startButton.addActionListener((e) -> {
             try {
-                sender = new Sender(addressField.getText(), portField.getText());
-                receiver = new Receiver(addressField.getText(),portField.getText());
+                sender = new Sender(addressField.getText(), senderPortField.getText(),receiverPortField.getText());
+                receiver = new Receiver(addressField.getText(), receiverPortField.getText());
                 UDPFrame.this.add(new JScrollPane(table = new ReceiverTable(receiver.getTableModel(), windowSize)),
                         BorderLayout.CENTER);
                 UDPFrame.this.revalidate();
                 startButton.setEnabled(false);
                 addressField.setEditable(false);
-                portField.setEditable(false);
+                senderPortField.setEditable(false);
+                receiverPortField.setEditable(false);
                 senderThread = new Thread(sender);
                 receiverThread = new Thread(receiver);
                 senderThread.start();

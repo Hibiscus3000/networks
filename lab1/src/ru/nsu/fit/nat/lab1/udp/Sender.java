@@ -10,12 +10,12 @@ public class Sender extends Participant {
     private final int bufSize = 1024;
     private final InetAddress group;
     private final String multicastMessage = "UDP self-recognition";
-    private final int port;
+    private final int receiverPort;
     private final long delay = 2000;
 
-    public Sender(String addr, String port) throws Exception {
-        this.port = Integer.parseInt(port);
-        socket = new DatagramSocket();
+    public Sender(String addr, String senderPort, String receiverPort) throws Exception {
+        this.receiverPort = Integer.parseInt(receiverPort);
+        socket = new DatagramSocket(Integer.parseInt(senderPort));
         group = InetAddress.getByName(addr);
     }
 
@@ -43,7 +43,7 @@ public class Sender extends Participant {
 
     private void sendMessage(String message) throws IOException {
         buf = message.getBytes();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, group, port);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, group, receiverPort);
         socket.send(packet);
     }
 }
